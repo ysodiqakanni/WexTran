@@ -12,7 +12,7 @@ namespace WexTran.Api.Services
         Task<TransactionResponse> CreateAsync(CreateTransactionRequest request);
     }
 
-    public class TransactionService
+    public class TransactionService : ITransactionService
     {
         private readonly ITransactionRepository _repository;
         public TransactionService(ITransactionRepository repository)
