@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace WexTran.Api.External
@@ -20,6 +19,7 @@ namespace WexTran.Api.External
         {
             _httpClient = httpClient;
         }
+
         public async Task<ExchangeRateResult> GetExchangeRateAsync(string currency, DateTime purchaseDate)
         {
             var sixMonthsAgo = purchaseDate.AddMonths(-6);
