@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using WexTran.Api.DTOs;
 using WexTran.Api.Services;
@@ -24,6 +26,13 @@ namespace WexTran.Api.Controllers
         public async Task<ActionResult<TransactionResponse>> Create([FromBody] CreateTransactionRequest request)
         {
             var result = await _transactionService.CreateAsync(request);
+            return Ok(result);
+        }
+
+        [HttpGet("{trnid}")]
+        public async Task<ActionResult<TransactionByCurrencyResponse>> GetById(Guid trnid, [FromQuery] GetTransactionRequest request)
+        {
+            var result = await _transactionService.GetByCurrencyAsync(trnid, request.Currency);
             return Ok(result);
         }
     }
