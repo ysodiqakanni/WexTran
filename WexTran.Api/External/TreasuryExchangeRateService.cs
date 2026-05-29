@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -40,7 +41,7 @@ namespace WexTran.Api.External
             var record = apiResponse?.Data.FirstOrDefault();
             if (record is null) return null;
 
-            if (!decimal.TryParse(record.ExchangeRate, out var rate)) return null;
+            if (!decimal.TryParse(record.ExchangeRate, NumberStyles.Number, CultureInfo.InvariantCulture, out var rate)) return null;
             if (!DateTime.TryParse(record.RecordDate, out var recordDate)) return null;
 
             return new ExchangeRateResult
