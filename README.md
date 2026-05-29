@@ -73,7 +73,7 @@ docker-compose up --build
 
 The API will be available at `http://localhost:8080` and Swagger UI at `http://localhost:8080/swagger`.
 
-> **Note:** Ensure database migrations have been applied to the remote SQL Server before starting the container — see [Applying Migrations](#applying-migrations) below.
+> **Note:** Ensure database migrations have been applied to the remote SQL Server before starting the container. See [Applying Migrations](#applying-migrations) below.
 
 To stop the container:
 
@@ -170,10 +170,10 @@ A full list is available on the [Treasury dataset page](https://fiscaldata.treas
 ```
 
 **Error responses:**
-- `400` — invalid or missing request parameters
-- `401` — missing or invalid API key
-- `404` — transaction not found
-- `422` — no exchange rate available within 6 months of the transaction date for the requested currency
+- `400`: invalid or missing request parameters
+- `401`: missing or invalid API key
+- `404`: transaction not found
+- `422`: no exchange rate available within 6 months of the transaction date for the requested currency
 
 ---
 
@@ -189,7 +189,7 @@ Returns `200 Healthy` or `503 Unhealthy` depending on database connectivity. Int
 
 ## Running Tests
 
-No SQL Server required — integration tests use an in-memory database.
+No SQL Server required; integration tests use an in-memory database.
 
 ```bash
 dotnet test
@@ -203,9 +203,9 @@ dotnet test
 
 The project follows a strict three-layer separation:
 
-- **Controllers** — handle HTTP concerns only: deserialising the request, invoking the service, and returning the response. They contain no business logic.
-- **Services** — own all business logic: validation rules, rounding, and orchestrating calls to the repository and external exchange rate service.
-- **Repositories** — abstract data access behind an interface. This decouples the service layer from Entity Framework Core, making the business logic independently testable with mocks.
+- **Controllers** handle HTTP concerns only: deserialising the request, invoking the service, and returning the response. They contain no business logic.
+- **Services** own all business logic: validation rules, rounding, and orchestrating calls to the repository and external exchange rate service.
+- **Repositories** abstract data access behind an interface. This decouples the service layer from Entity Framework Core, making the business logic independently testable with mocks.
 
 This separation keeps each layer focused, independently testable, and easy to change without affecting the others.
 
@@ -235,10 +235,10 @@ HTTP calls to the Treasury API are protected by a resilience pipeline via `Micro
 
 ASP.NET Core's built-in `ILogger` is used throughout. The `GlobalExceptionHandler` logs:
 
-- Unhandled exceptions at `Error` level with full stack traces — covers database failures, unexpected nulls, and any other unhandled fault.
-- Known business exceptions (`TransactionNotFoundException`, `CurrencyConversionUnavailableException`, etc.) at `Warning` level — confirms the system handled the case correctly without the noise of a stack trace.
+- Unhandled exceptions at `Error` level with full stack traces, covering database failures, unexpected nulls, and any other unhandled fault.
+- Known business exceptions (`TransactionNotFoundException`, `CurrencyConversionUnavailableException`, etc.) at `Warning` level, confirming the system handled the case correctly without the noise of a stack trace.
 
-**In a production environment,** `ILogger` would be backed by [Serilog](https://serilog.net/) configured to write structured JSON logs to a rolling file sink and ship to an observability platform such as [Datadog](https://www.datadoghq.com/) or [New Relic](https://newrelic.com/). This enables log aggregation, alerting, dashboards, and distributed tracing across services — none of which are available from console output alone.
+**In a production environment,** `ILogger` would be backed by [Serilog](https://serilog.net/) configured to write structured JSON logs to a rolling file sink and ship to an observability platform such as [Datadog](https://www.datadoghq.com/) or [New Relic](https://newrelic.com/). This enables log aggregation, alerting, dashboards, and distributed tracing across services, none of which are available from console output alone.
 
 ---
 
@@ -254,4 +254,4 @@ The `amountUsd` field is validated to a maximum of $10,000,000 per transaction.
 
 Domain-specific exceptions (`InvalidTransactionException`, `TransactionNotFoundException`, `CurrencyConversionUnavailableException`) are thrown from the service layer and caught centrally by `GlobalExceptionHandler`, which maps each type to the appropriate HTTP status code and returns an [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) `ProblemDetails` response.
 
-**Why:** Without a central handler, each controller action would need its own try/catch blocks to produce consistent error responses — a violation of DRY and a frequent source of inconsistent error shapes across endpoints. The global handler keeps controllers thin, guarantees a uniform error response format, and ensures all exceptions are logged in one place regardless of which endpoint triggered them.
+**Why:** Without a central handler, each controller action would need its own try/catch blocks to produce consistent error responses, a violation of DRY and a frequent source of inconsistent error shapes across endpoints. The global handler keeps controllers thin, guarantees a uniform error response format, and ensures all exceptions are logged in one place regardless of which endpoint triggered them.
