@@ -34,7 +34,7 @@ namespace WexTran.Api.Services
                 Id = Guid.NewGuid(),
                 Description = request.Description?.Trim(),
                 TransactionDate = request.TransactionDate,
-                AmountUsd = Math.Round(request.AmountUsd, 2),
+                AmountUsd = Math.Round(request.AmountUsd, 2, MidpointRounding.AwayFromZero),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -59,7 +59,7 @@ namespace WexTran.Api.Services
             if (rateResult == null)
                 throw new CurrencyConversionUnavailableException(currency, transaction.TransactionDate);
 
-            var convertedAmount = Math.Round(transaction.AmountUsd * rateResult.Rate, 2);
+            var convertedAmount = Math.Round(transaction.AmountUsd * rateResult.Rate, 2, MidpointRounding.AwayFromZero);
 
             return new TransactionByCurrencyResponse
             {
