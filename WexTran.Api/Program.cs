@@ -37,6 +37,8 @@ namespace WexTran.Api
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
             builder.Services.AddScoped<ITransactionService, TransactionService>();
 
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -46,6 +48,7 @@ namespace WexTran.Api
                 app.UseSwaggerUI();
             }
 
+            app.UseExceptionHandler();
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
