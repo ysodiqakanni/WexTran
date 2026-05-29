@@ -19,7 +19,7 @@ public class TransactionsEndpointTests : IClassFixture<CustomWebApplicationFacto
     public TransactionsEndpointTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient();
+        _client = factory.CreateAuthenticatedClient();
     }
 
     public Task InitializeAsync()
@@ -142,6 +142,31 @@ public class TransactionsEndpointTests : IClassFixture<CustomWebApplicationFacto
         var response = await _client.GetAsync($"/api/transactions/{Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    // ── authentication ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Post_MissingApiKey_Returns401()
+    {
+        var client = _factory.CreateClient();
+        var body = new { description = "Test", transactionDate = "2024-03-15", amountUsd = 10.00 };
+
+        var response = await client.PostAsJsonAsync("/api/transactions", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Post_WrongApiKey_Returns401()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Api-Key", "wrong-key");
+        var body = new { description = "Test", transactionDate = "2024-03-15", amountUsd = 10.00 };
+
+        var response = await client.PostAsJsonAsync("/api/transactions", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────

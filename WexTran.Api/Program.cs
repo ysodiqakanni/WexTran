@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ using Polly;
 using System;
 using System.IO;
 using System.Reflection;
+using WexTran.Api.Auth;
 using WexTran.Api.External;
 using WexTran.Api.Repositories;
 using WexTran.Api.Services;
@@ -26,7 +28,8 @@ namespace WexTran.Api
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddScoped<ApiKeyAuthFilter>();
+            builder.Services.AddControllers(options => options.Filters.AddService<ApiKeyAuthFilter>());
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
@@ -34,6 +37,29 @@ namespace WexTran.Api
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 options.IncludeXmlComments(xmlPath);
+
+                options.AddSecurityDefinition(ApiKeyAuthFilter.HeaderName, new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header,
+                    Name = ApiKeyAuthFilter.HeaderName,
+                    Description = "API key required for all endpoints. Enter your key in the field below."
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = ApiKeyAuthFilter.HeaderName
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
             });
 
             builder.Services.AddDbContext<WexTransactionDbContext>(options =>
